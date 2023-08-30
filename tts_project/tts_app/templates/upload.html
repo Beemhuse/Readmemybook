@@ -1,0 +1,21 @@
+<!-- ttsconverter/templates/ttsconverter/index.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text to Speech Converter</title>
+</head>
+<body>
+    <h1>Text to Speech Converter</h1>
+<ul>
+    {% for audio_file in audio_files %}
+    <li>
+        {{ audio_file.name }}
+        <audio controls>
+            <source src="{% url 'get_audio' audio_file.id %}" type="audio/mpeg">
+        </audio>
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>

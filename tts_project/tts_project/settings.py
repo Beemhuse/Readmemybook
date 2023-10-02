@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # 'background-tasks'
 ]
 
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
@@ -51,7 +52,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 ROOT_URLCONF = 'tts_project.urls'
 
 TEMPLATES = [

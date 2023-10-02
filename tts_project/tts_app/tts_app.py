@@ -1,4 +1,5 @@
 import io
+import logging
 import threading
 
 import pyttsx3
@@ -13,6 +14,8 @@ engine = pyttsx3.init()
 # Create a flag to control speech synthesis
 is_speech_paused = False
 speech_event = threading.Event()
+engine_lock = threading.Lock()
+
 def read_text_from_file(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -36,49 +39,80 @@ def read_pdf_content(file_content):
 
         return text_content
     except Exception as e:
+        logging.error(f"Error in text_to_speech: {str(e)}")
         print("Error while reading PDF:", e)
         return None
+#
+# def text_to_speech(text_content):
+#     try:
+#         def speech_thread():
+#             global speech_event
+#
+#             while not speech_event.is_set():
+#                 engine.say(text_content)
+#                 engine.runAndWait()
+#
+#         # Start speech synthesis in a separate thread
+#         speech_thread = threading.Thread(target=speech_thread)
+#         speech_thread.start()
+#
+#
+#         # Start speech synthesis in a separate thread
+#         speech_thread = threading.Thread(target=speech_thread)
+#         speech_thread.start()
+#
+#         # player.play()  # Start playing audio
+#         # Simulate the conversion process
+#         temp_output_file = "output.wav"
+#         engine.save_to_file(text_content, temp_output_file)
+#         engine.runAndWait()
+#
+#         # Wait for the speech thread to complete
+#         speech_thread.join()
+#         player.pause()
+#
+#         # Convert the WAV file to MP3 using pydub
+#         audio = AudioSegment.from_wav(temp_output_file)
+#
+#         # Export the MP3 data as bytes
+#         mp3_buffer = io.BytesIO()
+#         audio.export(mp3_buffer, format='mp3')
+#
+#         # Remove the temporary WAV file
+#         import os
+#         os.remove(temp_output_file)
+#
+#         return mp3_buffer.getvalue()  # Return the binary data of the MP3 file
+#     except Exception as e:
+#         print("Error during text-to-speech:", e)
+#         return None
 
 def text_to_speech(text_content):
     try:
-        def speech_thread():
-            global speech_event
+        # Use a BytesIO buffer to capture the audio data
+        audio_buffer = io.BytesIO()
 
-            while not speech_event.is_set():
-                engine.say(text_content)
-                engine.runAndWait()
+        # Set up an event handler to capture the audio data
+        def on_audio_finished(name, completed):
+            if completed:
+                engine.save_to_file(text_content, audio_buffer)
+                engine.stop()
+                audio_buffer.seek(0)
 
-        # Start speech synthesis in a separate thread
-        speech_thread = threading.Thread(target=speech_thread)
-        speech_thread.start()
+        # Attach the event handler
+        engine.connect('finished-utterance', on_audio_finished)
 
-
-        # Start speech synthesis in a separate thread
-        speech_thread = threading.Thread(target=speech_thread)
-        speech_thread.start()
-
-        # player.play()  # Start playing audio
-        # Simulate the conversion process
-        temp_output_file = "output.wav"
-        engine.save_to_file(text_content, temp_output_file)
+        # Initiate speech synthesis
+        engine.say(text_content)
         engine.runAndWait()
 
-        # Wait for the speech thread to complete
-        speech_thread.join()
-        player.pause()
-
-        # Convert the WAV file to MP3 using pydub
-        audio = AudioSegment.from_wav(temp_output_file)
-
-        # Export the MP3 data as bytes
+        # Convert the synthesized speech to an MP3 file using pydub
+        audio = AudioSegment.from_wav(audio_buffer)
         mp3_buffer = io.BytesIO()
         audio.export(mp3_buffer, format='mp3')
 
-        # Remove the temporary WAV file
-        import os
-        os.remove(temp_output_file)
-
         return mp3_buffer.getvalue()  # Return the binary data of the MP3 file
+
     except Exception as e:
         print("Error during text-to-speech:", e)
         return None

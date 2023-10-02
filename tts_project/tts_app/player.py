@@ -8,6 +8,9 @@ class Player:
     def pause(self):
         self.playing = False
 
+    def stop(self):
+        self.playing = False
+
     def is_playing(self):
         return self.playing
     # Other methods to control play, pause, etc.
